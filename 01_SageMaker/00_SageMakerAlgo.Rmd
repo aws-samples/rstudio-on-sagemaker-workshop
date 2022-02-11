@@ -1,0 +1,183 @@
+---
+title: "00_SageMakerAlgo"
+output: 
+  html_notebook:
+    toc: true
+    toc_float: true
+---
+
+Installing and loading the packages needed for this notebook
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+Clear the workspace
+```{r}
+rm(list = ls())
+```
+
+```{r}
+if (!'Metrics' %in% installed.packages()) {install.packages("Metrics")}
+if (!'tidyverse' %in% installed.packages()) {install.packages("tidyverse")}
+if (!'caret' %in% installed.packages()) {install.packages("caret")}
+
+library(reticulate)
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(Metrics)
+library(tidyverse)
+library(caret)
+library(pROC)
+```
+
+Next, loading the Reticulate library and import the SageMaker Python module. Reticulate provides interface to 'Python' modules, classes, and functions. 
+
+Amazon SageMaker Python SDK is an open source library for training and deploying machine-learned models on Amazon SageMaker.
+With the SDK, you can train and deploy models using popular deep learning frameworks, algorithms provided by Amazon, or your own algorithms built into SageMaker-compatible Docker images.
+https://sagemaker.readthedocs.io/en/stable/
+
+```{r}
+library(reticulate)
+sagemaker <- import('sagemaker')
+session <- sagemaker$Session()
+bucket <- session$default_bucket()
+role_arn <- sagemaker$get_execution_role()
+```
+
+Reading the data file churn.txt. The data is for customer churn in a telecommunication organization (synthetic data). The goal is to predict whether a customer is going to churn or not.
+
+
+```{r}
+sagemaker$s3$S3Downloader$download("s3://sagemaker-sample-files/datasets/tabular/synthetic/churn.txt", "dataset")
+churn <- read_csv(file = "dataset/churn.txt", col_names = TRUE, show_col_types = FALSE)
+head(churn)
+```
+Carrying out various data preprocessing steps
+```{r}
+#Transforming the categorical variables to dummy variables since Xgboost only takes numerical inputs for features
+#Now dropping certain columns that are redundant using dplyr's select method
+churn = select(churn, -c("Phone", "Day Charge", "Eve Charge", "Night Charge", "Intl Charge"))
+
+churn <- rename(churn, "intlplan" = "Int'l Plan")
+churn <- rename(churn, "churn" = "Churn?")
+```
+Plotting international plan histogram as a function of target variable "churn" using ggplot2
+```{r}
+ggplot(churn, aes(x = churn, fill = intlplan)) +  geom_bar() + theme_classic()
+```
+
+Plotting histograms for customer service calls as a function of target variable (churn), using R's hist function
+```{r}
+hist(churn$"CustServ Calls"[which(churn$churn == "True.")], col = 'red', breaks = 15, ylim = c(0,600), main = "Churn = True", xlab = "Customer Service Calls")
+hist(churn$"CustServ Calls"[which(churn$churn == "False.")], col = 'blue', breaks = 15, ylim = c(0,600),main = "Churn = False", xlab = "Customer Service Calls")
+```
+
+Additional pre-processing steps
+```{r}
+#Changing target variable churn into dummy variable and keeping just True column while dropping False
+churn <- churn %>% mutate(dummy=1) %>% spread(key="churn",value=dummy, fill=0) 
+churn <- subset(churn, select = -c(False.))
+churn <- rename(churn, "churn" = True.)
+
+#Making the target variable "churn" as the first column as XGBoost expects the data to be in this format
+churn <- churn %>% select("churn", everything())
+
+#Transforming intlplan (international plan) to dummy, dropping resulting "no" variable and renaming "yes" using dplyr's rename method
+churn <- churn %>% mutate(dummy=1) %>% spread(key="intlplan",value=dummy, fill=0) 
+churn <- subset(churn, select = -c(no))
+churn <- rename(churn, "intlplan" = yes)
+
+#Transforming VMaill plan to dummy, dropping resulting "no" variable and renaming "yes" using dplyr's rename method
+churn <- churn %>% mutate(dummy=1) %>% spread(key="VMail Plan",value=dummy, fill=0) 
+churn <- subset(churn, select = -c(no))
+churn <- rename(churn, "VMail plan" = yes)
+
+#Transforming variable "State" into dummy variables
+churn <- churn %>% mutate(dummy=1) %>% spread(key="State",value=dummy, fill=0)
+head(churn)
+```
+Dividing the dataset into train, validation and test datasets and writing the csv files in current directory
+```{r}
+churn_train <- churn %>% sample_frac(size = 0.7)
+churn <- anti_join(churn, churn_train)
+churn_test <- churn %>% sample_frac(size = 0.5)
+churn_valid <- anti_join(churn, churn_test)
+
+write_csv(churn_train, 'dataset/churn_train.csv', col_names = FALSE)
+write_csv(churn_valid, 'dataset/churn_valid.csv', col_names = FALSE)
+# Remove target from test
+write_csv(churn_test[-1], 'dataset/churn_test.csv', col_names = FALSE)
+```
+Writing the data to S3 bucket for the model training job
+```{r}
+s3_train <- session$upload_data(path = 'dataset/churn_train.csv', bucket = bucket, key_prefix = 'r_example/data')
+s3_valid <- session$upload_data(path = 'dataset/churn_valid.csv', bucket = bucket, key_prefix = 'r_example/data')
+s3_test <- session$upload_data(path = 'dataset/churn_test.csv',   bucket = bucket, key_prefix = 'r_example/data')
+```
+Specifying the training and validation data channels for model training
+```{r}
+s3_train_input <- sagemaker$inputs$TrainingInput(s3_data = s3_train, content_type = 'csv')
+s3_valid_input <- sagemaker$inputs$TrainingInput(s3_data = s3_valid, content_type = 'csv')
+input_data <- list('train' = s3_train_input, 'validation' = s3_valid_input)
+```
+Using the SageMaker's builtin XGBoost model container for model training and the output path for model artifacts
+```{r}
+container <- sagemaker$image_uris$retrieve(framework='xgboost', region= session$boto_region_name, version='latest')
+cat('XGBoost Container Image URL: ', container)
+s3_output <- paste0('s3://', bucket, '/r_example/output')
+```
+Specifying the number of instances and instance type to train the model on along with model image uri, role and input mode. Also setting up the training job as  binary classification with objective metric as error. 
+```{r}
+estimator <- sagemaker$estimator$Estimator(image_uri = container,
+                                           role = role_arn,
+                                           instance_count = 1L,
+                                           instance_type = 'ml.m5.xlarge',
+                                           input_mode = 'File',
+                                           output_path = s3_output)
+estimator$set_hyperparameters(eval_metric='error',
+                              objective='binary:logistic',
+                              num_round=100L)
+```
+Starting the model training job
+```{r}
+estimator$fit(inputs = input_data)  
+```
+Deploying our trained model as a SageMaker endpoint and setting up the serializer for correct data format for the endpoint
+```{r}
+model_endpoint <- estimator$deploy(initial_instance_count=1L, instance_type='ml.m4.xlarge')
+model_endpoint$serializer <- sagemaker$serializers$CSVSerializer(content_type='text/csv')
+```
+Sending the test data (that we set aside earlier) to the endpoint and adding the returned predictions to the test data set for comparison
+```{r}
+test_sample <- as.matrix(churn_test[-1])
+dimnames(test_sample)[[2]] <- NULL
+predictions_ep <- model_endpoint$predict(test_sample)
+predictions_ep <- str_split(predictions_ep, pattern = ',', simplify = TRUE)
+predictions_ep <- as.numeric(unlist(predictions_ep))
+
+churn_predictions_ep <- cbind(predicted_churn = predictions_ep, churn_test)
+
+head(churn_predictions_ep)
+```
+Displaying the confusion matrix and additional metrics when using 0.5 as the threshold for binary prediction
+```{r}
+confusionMatrix(as.factor(churn_predictions_ep$churn), as.factor(round(churn_predictions_ep$predicted_churn)))
+```
+Plotting the ROC curve
+```{r}
+roc_churn <- roc(churn_predictions_ep$churn, churn_predictions_ep$predicted_churn)
+auc_churn <- roc_churn$auc
+
+# Creating ROC plot
+ggroc(roc_churn, colour = 'red', size = 1.3) + ggtitle(paste0('Receiver Operating Characteristics (ROC) Curve ', '(AUC = ', round(auc_churn, digits = 3), ')'))
+```
+
+Delete the endpoint when done
+
+```{r}
+model_endpoint$delete_endpoint(delete_endpoint_config=TRUE)
+```
+

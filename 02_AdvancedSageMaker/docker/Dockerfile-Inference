@@ -1,0 +1,27 @@
+FROM public.ecr.aws/docker/library/r-base:latest
+
+# install plumber and deps from https://packages.debian.org/sid/r-cran-plumber
+RUN apt update && apt-get install -y --no-install-recommends \
+    libjs-bootstrap \
+    libjs-jquery \
+    r-api-4.0 \
+    r-cran-crayon \
+    r-cran-httpuv \
+    r-cran-jsonlite \
+    r-cran-lifecycle \
+    r-cran-magrittr \
+    r-cran-mime \
+    r-cran-promises \
+    r-cran-r6 \
+    r-cran-sodium \
+    r-cran-stringi \
+    r-cran-swagger \
+    r-cran-webutils \
+    r-cran-plumber
+     
+RUN R -e "install.packages('mda',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+COPY ./docker/plumber.R /opt/ml/plumber.R
+COPY ./docker/server.R /opt/ml/server.R
+
+ENTRYPOINT ["Rscript", "/opt/ml/server.R"]

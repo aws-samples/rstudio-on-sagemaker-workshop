@@ -1,0 +1,123 @@
+---
+title: "SageMaker Training"
+output: html_document
+---
+
+## SageMaker Training
+
+Clear the workspace
+```{r}
+rm(list = ls())
+```
+
+```{bash}
+python -m pip install -U sagemaker
+```
+
+## Imports
+```{r}
+library(reticulate)
+use_python('/opt/python/3.7.7/bin/python')
+sagemaker <- import('sagemaker')
+
+role = sagemaker$get_execution_role()
+session = sagemaker$Session()
+s3_output = paste("s3://", session$default_bucket(), sep="")
+bucket <- session$default_bucket()
+
+account_id <- session$account_id()
+region <- session$boto_region_name
+```
+
+```{r}
+sagemaker$s3$S3Downloader$download("s3://sagemaker-sample-files/datasets/tabular/iris/iris.data","dataset")
+
+data <- civit_gps <- read.csv(file="dataset/iris.data",head=FALSE,sep=",")
+newheaders <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species")
+colnames(data) <- newheaders
+write.csv(data, "dataset/iris.data", row.names = FALSE)
+
+
+s3_train <- session$upload_data(path = 'dataset/iris.data', 
+                                bucket = bucket, 
+                                key_prefix = 'data')
+```
+
+```{r}
+container_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-training:1.0", sep=".")
+
+# https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo-dockerfile.html
+# Estimator
+estimator <- sagemaker$estimator$Estimator(image_uri = container_uri,
+                                           base_job_name="train-iris-mars",
+                                           entry_point = "training.R",
+                                           role = role,
+                                           metric_definitions = list(list("Name" = "mse", "Regex" = "mse: ([0-9\\.]+)")),
+                                           instance_count = 1L,
+                                           instance_type = 'ml.m5.4xlarge',
+                                           volume_size = 30L,
+                                           max_run = 3600L,
+                                           input_mode = 'File')
+```
+
+```{r}
+# Train the estimator
+s3_train_input <- sagemaker$inputs$TrainingInput(s3_data = s3_train,
+                                     content_type = 'csv')
+estimator$fit(inputs=list("train" = s3_train_input), logs=TRUE)
+```
+
+
+```{r}
+hyperparameter_ranges = list('thresh' = sagemaker$parameter$ContinuousParameter(0.001, 0.01),
+                             'prune'= sagemaker$parameter$CategoricalParameter(list(TRUE, FALSE)))
+
+objective_metric_name = "mse"
+metric_definitions = list(list("Name" = "mse", "Regex" = "mse: ([0-9\\.]+)"))
+
+# Create a hyperparamter tuner
+tuner <- sagemaker$tuner$HyperparameterTuner(estimator,
+                                             objective_metric_name,
+                                             hyperparameter_ranges,
+                                             metric_definitions,
+                                             objective_type='Minimize',
+                                             max_jobs=4L,
+                                             max_parallel_jobs=2L)
+
+job_name <- paste('tune-mars', format(Sys.time(), '%Y%m%d-%H-%M-%S'), sep = '-')
+
+tuner$fit(inputs=list("train" = s3_train_input), wait=TRUE, job_name = job_name)
+```
+
+```{r}
+best_estimator <- tuner$best_estimator()
+```
+
+
+
+```{r}
+inference_contianer_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-inference:1.0", sep=".")
+
+trained_model <- best_estimator$create_model(name='r-iris-model', role=role, image_uri = container_uri)
+endpoint  <- trained_model$deploy(initial_instance_count = 1L,
+                                  instance_type = "ml.t2.medium",
+                                  serializer = sagemaker$serializers$CSVSerializer(content_type='text/csv'),
+                                  deserializer = sagemaker$deserializers$JSONDeserializer())
+```
+
+Test our endpoint
+```{r}
+test_sample <- unlist(data[1,])
+probabilities <- endpoint$predict(test_sample)
+predicted_class <- which.max(as.numeric(unlist(strsplit(probabilities, ","))))
+
+print(probabilities)
+print(predicted_class)
+```
+
+Delete the endpoint when done
+```{r}
+endpoint$delete_endpoint(delete_endpoint_config=TRUE)
+```
+
+

@@ -1,0 +1,13 @@
+FROM public.ecr.aws/docker/library/r-base:latest
+
+RUN apt-get update && apt-get install -y python3-dev python3-pip 
+RUN pip3 install boto3
+
+RUN R -e "install.packages('jsonlite',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('reticulate',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('mda',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+
+COPY ./docker/download_and_execute_source.R /opt/ml/download_and_execute_source.R
+
+ENTRYPOINT ["/bin/sh", "-c" , "Rscript /opt/ml/download_and_execute_source.R"]

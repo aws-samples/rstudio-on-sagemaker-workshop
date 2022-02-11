@@ -1,0 +1,130 @@
+---
+title: "01_SimpleUseCase"
+output: html_document
+---
+
+# Simple RStudio Use Case
+
+Clear the workspace
+```{r}
+rm(list = ls())
+```
+
+```{r}
+if (!'tidyverse' %in% installed.packages()) {install.packages('tidyverse')}
+if (!'tidymodels' %in% installed.packages()) {install.packages('tidymodels')}
+```
+
+```{r}
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(tidymodels))
+```
+
+
+## Downloading and Processing the Dataset
+The model uses the [abalone dataset](https://archive.ics.uci.edu/ml/datasets/abalone) 
+from the UCI Machine Learning Repository.
+```{r}
+abalone <- read_csv(file = 'dataset/abalone.csv', col_names = FALSE)
+names(abalone) <- c('sex', 'length', 'diameter', 'height', 'whole_weight', 'shucked_weight', 'viscera_weight', 'shell_weight', 'rings')
+head(abalone)
+```
+
+The output above shows that `sex` is a factor data type but is currently a
+character data type (F is Female, M is male, and I is infant). Change `sex` to a
+factor and view the statistical summary of the dataset:
+```{r}
+abalone <- abalone %>% 
+  mutate(sex = as_factor(sex))
+```
+
+```{r}
+summary(abalone)
+```
+
+The summary above shows that the minimum value for `height` is 0.
+
+Visually explore which abalones have `height` equal to 0 by plotting the
+relationship between `rings` and `height` for each value of `sex`:
+```{r}
+abalone %>% 
+  ggplot(aes(x = height, y = rings, color = sex)) +
+  geom_point() +
+  geom_jitter() +
+  theme_minimal()
+```
+
+The plot shows multiple outliers: two infant abalones with a height of 0 and a
+few female and male abalones with greater heights than the rest. Let’s filter
+out the two infant abalones with a height of 0.
+
+```{r}
+abalone <- abalone %>% 
+  filter(height != 0)
+
+head(abalone)
+```
+
+
+## Preparing the Dataset for Model Training
+
+The model needs three datasets: one for training, testing, and validation.
+First, convert `sex` into a dummy variable and move the target, `rings`, to the
+first column. Amazon SageMaker algorithm require the target to be in the first
+column of the dataset.
+```{r}
+abalone <- abalone %>%
+  mutate(female = as.integer(ifelse(sex == 'F', 1, 0)),
+         male = as.integer(ifelse(sex == 'M', 1, 0)),
+         infant = as.integer(ifelse(sex == 'I', 1, 0))) %>%
+  select(-sex)
+abalone <- abalone %>%
+  select(rings:infant, length:shell_weight)
+head(abalone)
+```
+
+Sample data for model training
+```{r}
+set.seed(42)
+abalone_train <- abalone %>%
+  sample_frac(size = 0.7)
+abalone <- anti_join(abalone, abalone_train)
+abalone_test <- abalone %>%
+  sample_frac(size = 0.5)
+abalone_valid <- anti_join(abalone, abalone_test)
+```
+```{r}
+library(tidymodels)
+
+lm_model <- linear_reg() %>% 
+            set_engine('lm') %>% # adds lm implementation of linear regression
+            set_mode('regression')
+```
+
+```{r}
+
+lm_fit <- lm_model %>% 
+          fit(rings ~ ., data = abalone_train)
+```
+
+```{r}
+summary(lm_fit$fit)
+```
+
+
+```{r}
+test_results <- predict(lm_fit, new_data = abalone_test) %>% 
+                            bind_cols(abalone_test)
+head(test_results)
+```
+
+```{r}
+ggplot(data = test_results,
+       mapping = aes(x = .pred, y = rings)) +
+  geom_point(color = '#006EA1') +
+  geom_abline(intercept = 0, slope = 1, color = 'orange') +
+  labs(title = 'Linear Regression Results',
+       x = 'Predicted Rings',
+       y = 'Actual Rings')
+```
+
