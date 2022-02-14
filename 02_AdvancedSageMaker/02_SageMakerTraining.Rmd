@@ -17,7 +17,6 @@ python -m pip install -U sagemaker
 ## Imports
 ```{r}
 library(reticulate)
-use_python('/opt/python/3.7.7/bin/python')
 sagemaker <- import('sagemaker')
 
 role = sagemaker$get_execution_role()
@@ -38,9 +37,13 @@ colnames(data) <- newheaders
 write.csv(data, "dataset/iris.data", row.names = FALSE)
 
 
-s3_train <- session$upload_data(path = 'dataset/iris.data', 
-                                bucket = bucket, 
+s3_train <- session$upload_data(path = 'dataset/iris.data',
+                                bucket = bucket,
                                 key_prefix = 'data')
+```
+
+```{r}
+head(data)
 ```
 
 ```{r}
@@ -75,11 +78,12 @@ hyperparameter_ranges = list('thresh' = sagemaker$parameter$ContinuousParameter(
 objective_metric_name = "mse"
 metric_definitions = list(list("Name" = "mse", "Regex" = "mse: ([0-9\\.]+)"))
 
-# Create a hyperparamter tuner
+# Create a hyperparameter tuner
 tuner <- sagemaker$tuner$HyperparameterTuner(estimator,
                                              objective_metric_name,
                                              hyperparameter_ranges,
                                              metric_definitions,
+                                             strategy='Bayesian',
                                              objective_type='Minimize',
                                              max_jobs=4L,
                                              max_parallel_jobs=2L)
@@ -119,5 +123,3 @@ Delete the endpoint when done
 ```{r}
 endpoint$delete_endpoint(delete_endpoint_config=TRUE)
 ```
-
-

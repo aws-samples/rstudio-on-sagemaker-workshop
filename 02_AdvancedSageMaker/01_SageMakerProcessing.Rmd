@@ -13,7 +13,6 @@ rm(list = ls())
 ## Imports
 ```{r}
 library(reticulate)
-use_python('/opt/python/3.7.7/bin/python')
 sagemaker <- import('sagemaker')
 ```
 
@@ -28,18 +27,14 @@ region <- session$boto_region_name
 ```
 
 
-
-```{r}
-tempo<-paste("r-processing", as.integer(as.numeric(Sys.time())), sep="-")
-tempo
-```
-
-
-
 ```{r}
 container_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-processing:1.0", sep=".")
+print(container_uri)
+```
+
+```{r}
 processor <- sagemaker$processing$ScriptProcessor(image_uri = container_uri,
-                                                  command=list("Rscript"),
+                                                   command=list("Rscript"),
                                                    role = role,
                                                    instance_count=1L,
                                                    instance_type="ml.c5.xlarge")
