@@ -1,3 +1,8 @@
 FROM public.ecr.aws/docker/library/r-base:latest
 
+# Install tidyverse
+RUN apt update && apt-get install -y --no-install-recommends \
+    r-cran-tidyverse
+
+
 ENTRYPOINT ["Rscript"]
