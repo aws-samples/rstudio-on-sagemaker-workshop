@@ -88,7 +88,7 @@ Plotting international plan histogram as a function of target variable
 ggplot(churn, aes(x = churn, fill = intlplan)) +  geom_bar() + theme_classic()
 ```
 
-![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Plotting histograms for customer service calls as a function of target
 variable (churn), using R’s hist function
@@ -97,13 +97,13 @@ variable (churn), using R’s hist function
 hist(churn$"CustServ Calls"[which(churn$churn == "True.")], col = 'red', breaks = 15, ylim = c(0,600), main = "Churn = True", xlab = "Customer Service Calls")
 ```
 
-![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
 hist(churn$"CustServ Calls"[which(churn$churn == "False.")], col = 'blue', breaks = 15, ylim = c(0,600),main = "Churn = False", xlab = "Customer Service Calls")
 ```
 
-![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
 
 Additional pre-processing steps
 
@@ -248,40 +248,40 @@ head(churn_predictions_ep)
 ```
 
     ##   predicted_churn churn Account Length Area Code VMail Message Day Mins
-    ## 1    4.192568e-02     0            103       836             0 3.069721
-    ## 2    9.997919e-01     1             86       866           100 9.389233
-    ## 3    8.468108e-01     1            163       858             0 2.895172
-    ## 4    7.061173e-05     0            144       868             0 2.380985
-    ## 5    9.452162e-01     1            191       787             0 8.297428
-    ## 6    3.246054e-02     0            148       797             0 3.667831
+    ## 1    0.0011134333     0            164       776             0 2.701862
+    ## 2    0.2117309570     1             59       877             0 6.025338
+    ## 3    0.0003365698     0            144       868             0 2.380985
+    ## 4    0.0001733809     0            111       657           900 1.681982
+    ## 5    0.9947387576     1            111       707             0 6.688583
+    ## 6    0.9809910059     1            136       836             0 6.260726
     ##   Day Calls Eve Mins Eve Calls Night Mins Night Calls Intl Mins Intl Calls
-    ## 1         2 5.929688         2   3.431606         200  4.513023          3
-    ## 2         2 6.263623         4   2.599003         200  5.626524          4
-    ## 3         6 3.562529         0   1.665333         150  5.579796          5
-    ## 4         6 9.193000         5   2.386652         400  3.759486          5
-    ## 5         3 4.700151         1   4.269188         100  6.723794          5
-    ## 6         2 4.359447         1   4.807714         200  5.489625          4
+    ## 1         3 2.804473         4   3.661662         250  3.414323          7
+    ## 2         3 2.880076         2   2.409942         150  3.765020          2
+    ## 3         6 9.193000         5   2.386652         400  3.759486          5
+    ## 4         3 4.520881         0   2.424065         350  5.262784          8
+    ## 5         5 5.809882         4   3.543888         200  5.269004          8
+    ## 6         2 7.647438         7   2.925580         400  5.120978          6
     ##   CustServ Calls intlplan VMail plan AK AL AR AZ CA CO CT DC DE FL GA HI IA ID
-    ## 1              3        0          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-    ## 2              4        1          1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-    ## 3             12        1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-    ## 4              5        1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-    ## 5              7        1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-    ## 6              6        0          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 1              5        1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 2              6        1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 3              5        1          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 4              7        0          1  0  1  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 5              6        0          0  0  0  0  0  0  0  0  0  0  1  0  0  0  0
+    ## 6              6        0          1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
     ##   IL IN KS KY LA MA MD ME MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA RI
-    ## 1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 1  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
     ## 2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
     ## 3  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
     ## 4  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-    ## 5  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0
-    ## 6  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0
+    ## 5  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+    ## 6  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
     ##   SC SD TN TX UT VA VT WA WI WV WY
-    ## 1  0  1  0  0  0  0  0  0  0  0  0
-    ## 2  0  0  0  0  0  1  0  0  0  0  0
-    ## 3  0  0  0  0  1  0  0  0  0  0  0
-    ## 4  0  0  0  0  0  0  1  0  0  0  0
+    ## 1  0  0  0  0  0  0  0  0  0  0  0
+    ## 2  0  0  0  0  0  0  0  0  1  0  0
+    ## 3  0  0  0  0  0  0  1  0  0  0  0
+    ## 4  0  0  0  0  0  0  0  0  0  0  0
     ## 5  0  0  0  0  0  0  0  0  0  0  0
-    ## 6  0  0  0  0  0  0  0  0  0  0  0
+    ## 6  0  1  0  0  0  0  0  0  0  0  0
 
 Displaying the confusion matrix and additional metrics when using 0.5 as
 the threshold for binary prediction
@@ -294,26 +294,26 @@ confusionMatrix(as.factor(churn_predictions_ep$churn), as.factor(round(churn_pre
     ## 
     ##           Reference
     ## Prediction   0   1
-    ##          0 338  31
-    ##          1  24 357
+    ##          0 353  28
+    ##          1  21 348
     ##                                           
-    ##                Accuracy : 0.9267          
-    ##                  95% CI : (0.9056, 0.9443)
-    ##     No Information Rate : 0.5173          
+    ##                Accuracy : 0.9347          
+    ##                  95% CI : (0.9145, 0.9513)
+    ##     No Information Rate : 0.5013          
     ##     P-Value [Acc > NIR] : <2e-16          
     ##                                           
-    ##                   Kappa : 0.8533          
+    ##                   Kappa : 0.8693          
     ##                                           
-    ##  Mcnemar's Test P-Value : 0.4185          
+    ##  Mcnemar's Test P-Value : 0.3914          
     ##                                           
-    ##             Sensitivity : 0.9337          
-    ##             Specificity : 0.9201          
-    ##          Pos Pred Value : 0.9160          
-    ##          Neg Pred Value : 0.9370          
-    ##              Prevalence : 0.4827          
-    ##          Detection Rate : 0.4507          
-    ##    Detection Prevalence : 0.4920          
-    ##       Balanced Accuracy : 0.9269          
+    ##             Sensitivity : 0.9439          
+    ##             Specificity : 0.9255          
+    ##          Pos Pred Value : 0.9265          
+    ##          Neg Pred Value : 0.9431          
+    ##              Prevalence : 0.4987          
+    ##          Detection Rate : 0.4707          
+    ##    Detection Prevalence : 0.5080          
+    ##       Balanced Accuracy : 0.9347          
     ##                                           
     ##        'Positive' Class : 0               
     ## 
@@ -335,7 +335,7 @@ auc_churn <- roc_churn$auc
 ggroc(roc_churn, colour = 'red', size = 1.3) + ggtitle(paste0('Receiver Operating Characteristics (ROC) Curve ', '(AUC = ', round(auc_churn, digits = 3), ')'))
 ```
 
-![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 Delete the endpoint when done
 

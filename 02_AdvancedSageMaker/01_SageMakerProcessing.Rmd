@@ -1,6 +1,8 @@
 ---
 title: "01_SageMakerProcessing"
 output: rmarkdown::github_document
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "rendered") })
 ---
 
 Clear the workspace

@@ -63,7 +63,7 @@ Using aws cli
 aws s3 cp s3://sagemaker-sample-files/datasets/tabular/uci_abalone/abalone.csv ./dataset/
 ```
 
-    ## Completed 187.4 KiB/187.4 KiB (320.0 KiB/s) with 1 file(s) remainingdownload: s3://sagemaker-sample-files/datasets/tabular/uci_abalone/abalone.csv to dataset/abalone.csv
+    ## Completed 187.4 KiB/187.4 KiB (300.4 KiB/s) with 1 file(s) remainingdownload: s3://sagemaker-sample-files/datasets/tabular/uci_abalone/abalone.csv to dataset/abalone.csv
 
 ### Utilize Native R Packages to read from Disk or HTTP
 

@@ -80,7 +80,7 @@ abalone %>%
   theme_minimal()
 ```
 
-![](01_SimpleUseCase_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/00_Intro/rendered/01_SimpleUseCase_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 The plot shows multiple outliers: two infant abalones with a height of 0
 and a few female and male abalones with greater heights than the rest.
@@ -229,4 +229,4 @@ ggplot(data = test_results,
        y = 'Actual Rings')
 ```
 
-![](01_SimpleUseCase_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/00_Intro/rendered/01_SimpleUseCase_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
