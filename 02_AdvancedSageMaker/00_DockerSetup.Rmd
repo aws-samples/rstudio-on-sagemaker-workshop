@@ -1,10 +1,6 @@
 ---
 title: "00_DockerSetup"
-output:
-  html_document:
-    toc: yes
-    df_print: paged
-    toc_float: yes
+output: rmarkdown::github_document
 ---
 
 ## Docker Setup

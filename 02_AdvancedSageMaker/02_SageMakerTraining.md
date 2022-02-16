@@ -1,21 +1,21 @@
----
-title: "SageMaker Training"
-output: rmarkdown::github_document
----
+SageMaker Training
+================
 
 ## SageMaker Training
 
 Clear the workspace
-```{r}
+
+``` r
 rm(list = ls())
 ```
 
-```{bash, results='hide'}
+``` bash
 python -m pip install -U sagemaker
 ```
 
 ## Imports
-```{r}
+
+``` r
 suppressWarnings(library(reticulate))
 sagemaker <- import('sagemaker')
 
@@ -28,7 +28,7 @@ account_id <- session$account_id()
 region <- session$boto_region_name
 ```
 
-```{r}
+``` r
 sagemaker$s3$S3Downloader$download("s3://sagemaker-sample-files/datasets/tabular/iris/iris.data","dataset")
 
 data <- civit_gps <- read.csv(file="dataset/iris.data",head=FALSE,sep=",")
@@ -42,11 +42,19 @@ s3_train <- session$upload_data(path = 'dataset/iris.data',
                                 key_prefix = 'data')
 ```
 
-```{r}
+``` r
 head(data)
 ```
 
-```{r}
+    ##   Sepal.Length Sepal.Width Petal.Length Petal.Width     Species
+    ## 1          5.1         3.5          1.4         0.2 Iris-setosa
+    ## 2          4.9         3.0          1.4         0.2 Iris-setosa
+    ## 3          4.7         3.2          1.3         0.2 Iris-setosa
+    ## 4          4.6         3.1          1.5         0.2 Iris-setosa
+    ## 5          5.0         3.6          1.4         0.2 Iris-setosa
+    ## 6          5.4         3.9          1.7         0.4 Iris-setosa
+
+``` r
 container_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-training:1.0", sep=".")
 
 # https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo-dockerfile.html
@@ -63,15 +71,14 @@ estimator <- sagemaker$estimator$Estimator(image_uri = container_uri,
                                            input_mode = 'File')
 ```
 
-```{r}
+``` r
 # Train the estimator
 s3_train_input <- sagemaker$inputs$TrainingInput(s3_data = s3_train,
                                      content_type = 'csv')
 estimator$fit(inputs=list("train" = s3_train_input), logs=TRUE)
 ```
 
-
-```{r}
+``` r
 hyperparameter_ranges = list('thresh' = sagemaker$parameter$ContinuousParameter(0.001, 0.01),
                              'prune'= sagemaker$parameter$CategoricalParameter(list(TRUE, FALSE)))
 
@@ -93,13 +100,11 @@ job_name <- paste('tune-mars', format(Sys.time(), '%Y%m%d-%H-%M-%S'), sep = '-')
 tuner$fit(inputs=list("train" = s3_train_input), wait=TRUE, job_name = job_name)
 ```
 
-```{r}
+``` r
 best_estimator <- tuner$best_estimator()
 ```
 
-
-
-```{r}
+``` r
 inference_contianer_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-inference:1.0", sep=".")
 
 trained_model <- best_estimator$create_model(name='r-iris-model', role=role, image_uri = container_uri)
@@ -110,16 +115,25 @@ endpoint  <- trained_model$deploy(initial_instance_count = 1L,
 ```
 
 Test our endpoint
-```{r}
+
+``` r
 test_sample <- unlist(data[1,])
 probabilities <- endpoint$predict(test_sample)
 predicted_class <- which.max(as.numeric(unlist(strsplit(probabilities, ","))))
 
 print(probabilities)
+```
+
+    ## [1] "0.506412021025866,0.950153510028136,-0.500864199734607,-0.500864199734607"
+
+``` r
 print(predicted_class)
 ```
 
+    ## [1] 2
+
 Delete the endpoint when done
-```{r}
+
+``` r
 endpoint$delete_endpoint(delete_endpoint_config=TRUE)
 ```

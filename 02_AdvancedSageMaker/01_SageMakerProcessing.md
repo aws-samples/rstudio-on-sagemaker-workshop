@@ -1,22 +1,22 @@
----
-title: "01_SageMakerProcessing"
-output: rmarkdown::github_document
----
+01\_SageMakerProcessing
+================
 
 Clear the workspace
-```{r}
+
+``` r
 rm(list = ls())
 ```
 
 ## SageMaker Processing
 
 ## Imports
-```{r}
+
+``` r
 suppressWarnings(library(reticulate))
 sagemaker <- import('sagemaker')
 ```
 
-```{r}
+``` r
 role = sagemaker$get_execution_role()
 session = sagemaker$Session()
 s3_output = session$default_bucket()
@@ -26,13 +26,12 @@ account_id <- session$account_id()
 region <- session$boto_region_name
 ```
 
-
-```{r, results='hide'}
+``` r
 container_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-processing:1.0", sep=".")
 print(container_uri)
 ```
 
-```{r}
+``` r
 processor <- sagemaker$processing$ScriptProcessor(image_uri = container_uri,
                                                    command=list("Rscript"),
                                                    role = role,
@@ -42,5 +41,3 @@ processor$run(
     code="/home/sagemaker-user/rstudio-on-sagemaker-workshop/02_AdvancedSageMaker/preprocessing.R",
     job_name=paste("r-processing", as.integer(as.numeric(Sys.time())), sep="-"))
 ```
-
-
