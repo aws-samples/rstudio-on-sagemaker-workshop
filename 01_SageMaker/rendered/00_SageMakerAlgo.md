@@ -88,7 +88,7 @@ Plotting international plan histogram as a function of target variable
 ggplot(churn, aes(x = churn, fill = intlplan)) +  geom_bar() + theme_classic()
 ```
 
-![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Plotting histograms for customer service calls as a function of target
 variable (churn), using R’s hist function
@@ -97,13 +97,13 @@ variable (churn), using R’s hist function
 hist(churn$"CustServ Calls"[which(churn$churn == "True.")], col = 'red', breaks = 15, ylim = c(0,600), main = "Churn = True", xlab = "Customer Service Calls")
 ```
 
-![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
 hist(churn$"CustServ Calls"[which(churn$churn == "False.")], col = 'blue', breaks = 15, ylim = c(0,600),main = "Churn = False", xlab = "Customer Service Calls")
 ```
 
-![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
 
 Additional pre-processing steps
 
@@ -335,7 +335,7 @@ auc_churn <- roc_churn$auc
 ggroc(roc_churn, colour = 'red', size = 1.3) + ggtitle(paste0('Receiver Operating Characteristics (ROC) Curve ', '(AUC = ', round(auc_churn, digits = 3), ')'))
 ```
 
-![](/home/sagemaker-user/rstudio-on-sagemaker-workshop/01_SageMaker/rendered/00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](00_SageMakerAlgo_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 Delete the endpoint when done
 
