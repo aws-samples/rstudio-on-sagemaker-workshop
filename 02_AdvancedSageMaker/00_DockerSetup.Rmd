@@ -1,6 +1,10 @@
 ---
 title: "00_DockerSetup"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+    toc_float: yes
 ---
 
 ## Docker Setup
@@ -119,23 +123,23 @@ output: html_document
 
 
 ## Install Studio Docker CLI
-```{bash, echo=False}
+```{bash, results='hide'}
 pip install sagemaker-studio-image-build
 ```
 
 
 ## Build Processing Container
-```{bash}
+```{bash, results='hide'}
 /home/sagemaker-user/.local/bin/sm-docker build . --file ./docker/Dockerfile-Processing --repository sagemaker-r-processing:1.0
 ```
 
 ## Build Training Container
-```{bash}
+```{bash, results='hide'}
 /home/sagemaker-user/.local/bin/sm-docker build . --file ./docker/Dockerfile-Training --repository sagemaker-r-training:1.0
 ```
 
 ## Build Inference Container
-```{bash}
+```{bash, results='hide'}
 /home/sagemaker-user/.local/bin/sm-docker build . --file ./docker/Dockerfile-Inference --repository sagemaker-r-inference:1.0
 ```
 

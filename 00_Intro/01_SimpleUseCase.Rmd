@@ -1,6 +1,10 @@
 ---
 title: "01_SimpleUseCase"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+    toc_float: yes
 ---
 
 # Simple RStudio Use Case
@@ -10,12 +14,9 @@ Clear the workspace
 rm(list = ls())
 ```
 
-```{r}
+```{r, message=FALSE}
 if (!'tidyverse' %in% installed.packages()) {install.packages('tidyverse')}
 if (!'tidymodels' %in% installed.packages()) {install.packages('tidymodels')}
-```
-
-```{r}
 suppressWarnings(library(tidyverse))
 suppressWarnings(library(tidymodels))
 ```
@@ -24,7 +25,7 @@ suppressWarnings(library(tidymodels))
 ## Downloading and Processing the Dataset
 The model uses the [abalone dataset](https://archive.ics.uci.edu/ml/datasets/abalone)
 from the UCI Machine Learning Repository.
-```{r}
+```{r, message=FALSE}
 abalone <- read_csv(file = 'dataset/abalone.csv', col_names = FALSE)
 names(abalone) <- c('sex', 'length', 'diameter', 'height', 'whole_weight', 'shucked_weight', 'viscera_weight', 'shell_weight', 'rings')
 head(abalone)
@@ -97,7 +98,7 @@ abalone_valid <- anti_join(abalone, abalone_test)
 ```{r}
 
 lm_model <- linear_reg() %>%
-            set_engine('lm') %>% # adds lm implementation of linear regression
+            set_engine('lm') %>% 
             set_mode('regression')
 ```
 

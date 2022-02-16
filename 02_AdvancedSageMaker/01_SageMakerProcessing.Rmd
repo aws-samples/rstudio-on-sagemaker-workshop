@@ -1,6 +1,10 @@
 ---
 title: "01_SageMakerProcessing"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+    toc_float: yes
 ---
 
 Clear the workspace
@@ -12,7 +16,7 @@ rm(list = ls())
 
 ## Imports
 ```{r}
-library(reticulate)
+suppressWarnings(library(reticulate))
 sagemaker <- import('sagemaker')
 ```
 
@@ -27,7 +31,7 @@ region <- session$boto_region_name
 ```
 
 
-```{r}
+```{r, results='hide'}
 container_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-processing:1.0", sep=".")
 print(container_uri)
 ```

@@ -1,36 +1,33 @@
 ---
 title: "00_SageMakerAlgo"
-output: 
-  html_notebook:
-    toc: true
-    toc_float: true
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+    toc_float: yes
 ---
 
-Installing and loading the packages needed for this notebook
-
-```{r setup, include=FALSE} 
-knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
-```
 
 Clear the workspace
 ```{r}
 rm(list = ls())
 ```
 
-```{r}
+Installing and loading the packages needed for this notebook
+```{r, results='hide', message=FALSE}
 if (!'Metrics' %in% installed.packages()) {install.packages("Metrics")}
 if (!'tidyverse' %in% installed.packages()) {install.packages("tidyverse")}
 if (!'caret' %in% installed.packages()) {install.packages("caret")}
 
-library(reticulate)
-library(readr)
-library(ggplot2)
-library(dplyr)
-library(stringr)
-library(Metrics)
-library(tidyverse)
-library(caret)
-library(pROC)
+suppressWarnings(library(reticulate))
+suppressWarnings(library(readr))
+suppressWarnings(library(ggplot2))
+suppressWarnings(library(dplyr))
+suppressWarnings(library(stringr))
+suppressWarnings(library(Metrics))
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(caret))
+suppressWarnings(library(pROC))
 ```
 
 Next, loading the Reticulate library and import the SageMaker Python module. Reticulate provides interface to 'Python' modules, classes, and functions. 
@@ -39,7 +36,7 @@ Amazon SageMaker Python SDK is an open source library for training and deploying
 With the SDK, you can train and deploy models using popular deep learning frameworks, algorithms provided by Amazon, or your own algorithms built into SageMaker-compatible Docker images.
 https://sagemaker.readthedocs.io/en/stable/
 
-```{r}
+```{r, results='hide'}
 library(reticulate)
 sagemaker <- import('sagemaker')
 session <- sagemaker$Session()

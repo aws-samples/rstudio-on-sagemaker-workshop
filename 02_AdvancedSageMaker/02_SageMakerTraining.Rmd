@@ -1,6 +1,10 @@
 ---
 title: "SageMaker Training"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+    toc_float: yes
 ---
 
 ## SageMaker Training
@@ -10,13 +14,13 @@ Clear the workspace
 rm(list = ls())
 ```
 
-```{bash}
+```{bash, results='hide'}
 python -m pip install -U sagemaker
 ```
 
 ## Imports
 ```{r}
-library(reticulate)
+suppressWarnings(library(reticulate))
 sagemaker <- import('sagemaker')
 
 role = sagemaker$get_execution_role()
