@@ -36,7 +36,7 @@ s3_raw_data <- session$upload_data(path = paste0(local_path,"/data/abalone_data.
                                    bucket = bucket,
                                    key_prefix = 'pipeline-example/data')
 
-# this will be used for testing
+# this will be used for testing the endpoint is available
 abalone_t <- abalone %>%
   mutate(female = as.integer(ifelse(sex == 'F', 1, 0)),
          male = as.integer(ifelse(sex == 'M', 1, 0)),
@@ -48,7 +48,7 @@ abalone_t <- abalone %>%
 
 
 # ------ Run pipeline -------
-source("pipeline-example/pipeline.R")
+source(paste0(local_path, "/pipeline.R"))
 my_pipeline <- get_pipeline(input_data_uri=s3_raw_data)
 
 my_pipeline$definition()

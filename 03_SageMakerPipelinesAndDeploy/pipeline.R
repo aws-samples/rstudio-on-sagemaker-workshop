@@ -16,7 +16,7 @@ get_pipeline <- function(input_data_uri){
   bucket <- session$default_bucket()
   
   role_arn <- sagemaker$get_execution_role()
-  account_id <- boto3$client("sts")$get_caller_identity()$"Account"
+  account_id <- session$account_id()
   region <- boto3$session$Session()$region_name
   
   ecr_repository_processing = "sagemaker-r-processing"

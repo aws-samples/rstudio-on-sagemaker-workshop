@@ -31,6 +31,4 @@ write_csv(abalone_train, paste0(output_dir,'train/abalone_train.csv'))
 write_csv(abalone_valid, paste0(output_dir,'valid/abalone_valid.csv'))
 write_csv(abalone_test, paste0(output_dir,'test/abalone_test.csv'))
 
-# Remove target from test
-# write_csv(abalone_test[-1], paste0(output_dir,'abalone_test.csv'), col_names = FALSE)
 
