@@ -54,7 +54,7 @@ get_pipeline <- function(input_data_uri){
   
   train_estimator <- sagemaker$estimator$Estimator(model_image_uri,
                                                    role_arn, 
-                                                   source_dir=paste0(local_path,"/training/code/"),
+                                                   source_dir=paste0(local_path,"/training_and_deploying/code/"),
                                                    entry_point="train.R",
                                                    instance_count=1L, 
                                                    instance_type='ml.m5.xlarge',
