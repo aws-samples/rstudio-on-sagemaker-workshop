@@ -1,13 +1,9 @@
 ---
-title: "00_Pipeline.Rmd"
-author: "Georgios Schinas"
-date: "13/04/2022"
-output: md_document
+title: "01_Pipeline"
+output: rmarkdown::github_document
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "rendered") })
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 # Use RStudio on SageMaker to create a SageMaker Pipeline and deploy to a serverless endpoint
 
@@ -16,7 +12,7 @@ This is an example of using RStudio on SageMaker showing how you can create a Sa
 The following diagram shows the architecture used in this example.
 
 
-![achitecture](images/SMPipelinesRStudio.png)
+![SMPipelinesRStudio](https://user-images.githubusercontent.com/18154355/163631036-88b6b936-b4f9-4228-815d-95611e65fdf0.png)
 
 
 This file contains the logic to run the end to end process along with comments for each of the steps.
@@ -36,10 +32,9 @@ To begin with, make sure you have all the necessary packages installed and initi
 
 
 ```{r}
-library(dplyr)
-library(reticulate)
-if (!py_module_available("sagemaker-studio-image-build")){py_install("sagemaker-studio-image-build", pip=TRUE)}
-library(readr)
+suppressWarnings(library(dplyr))
+suppressWarnings(library(reticulate))
+suppressWarnings(library(readr))
 
 sagemaker <- import('sagemaker')
 boto3 <- import('boto3')
@@ -87,16 +82,6 @@ abalone_t <- abalone %>%
   select(-sex)
 ```
 
-# Build the containers
-In this example, we are building our own, reusable, containers. If you are unfamiliar with this process, feel free to jump to the previous section in this repository, in 02_AdvancedSageMaker to learn more about this. 
-
-```{r}
-system(paste0("cd ", local_path, " ; sm-docker build . --file ./docker/Dockerfile-processing --repository sagemaker-r-processing:1.0"))
-
-system(paste0("cd ", local_path, " ; sm-docker build . --file ./docker/Dockerfile-train-and-deploy --repository sagemaker-r-train-and-deploy:1.0"))
-```
-
-
 # Run pipeline
 
 The pipelines is defined in the file `pipeline.R`. Head to that file to dive deeper into how a SageMaker Pipeline is being defined. To run it, we simply need to run the upsert method to create or update the pipeline and then running the start method actually starts the execution of the pipeline on SageMaker. 
@@ -107,10 +92,13 @@ To view the pipeline as it is running, head to SageMaker Studio where a custom U
 source(paste0(local_path, "/pipeline.R"))
 my_pipeline <- get_pipeline(input_data_uri=s3_raw_data)
 
-my_pipeline$definition()
-
 upserted <- my_pipeline$upsert(role_arn=role_arn)
 execution <- my_pipeline$start()
+```
+
+```{r, results='hide'}
+execution$describe()
+execution$wait()
 ```
 
 # Deploy to serverless endpoint
@@ -131,12 +119,16 @@ model_package_arn <- approved_models[["ModelPackageSummaryList"]][[1]][["ModelPa
 For the actual deployment, we need to create the SageMaker Model and then we can use the SageMaker SDK to deploy to a serverless endpoint as per below.
 
 ```{r}
+
+endpoint_name <- paste("serverless-r-abalone-endpoint", format(Sys.time(), '%Y%m%d-%H-%M-%S'), sep = '-')
+
+
 model <- sagemaker$ModelPackage(role=role_arn, 
                                 model_package_arn=model_package_arn, 
                                 sagemaker_session=session)
 
 serverless_config <- sagemaker$serverless$ServerlessInferenceConfig(memory_size_in_mb=1024L, max_concurrency=5L)
-model$deploy(serverless_inference_config=serverless_config, endpoint_name="serverless-r-abalone-endpoint")
+model$deploy(serverless_inference_config=serverless_config, endpoint_name=endpoint_name)
 
 ```
 
@@ -144,12 +136,12 @@ model$deploy(serverless_inference_config=serverless_config, endpoint_name="serve
 Using the data in variable `abalone_t` we will perform some sample predictions using the newly deployed model to test that it is up and running and capable of giving back predictions. 
 
 ```{r}
-library(jsonlite)
+suppressWarnings(library(jsonlite))
 x = list(features=format_csv(abalone_t[1:3,1:11]))
 x = toJSON(x)
 
 # test the endpoint
-predictor <- sagemaker$predictor$Predictor(endpoint_name="serverless-r-abalone-endpoint", sagemaker_session=session)
+predictor <- sagemaker$predictor$Predictor(endpoint_name=endpoint_name, sagemaker_session=session)
 predictor$predict(x)
 ```
 
