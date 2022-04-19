@@ -107,7 +107,7 @@ if (!'aws.s3' %in% installed.packages()) {install.packages('aws.s3')}
 if (!'aws.ec2metadata' %in% installed.packages()) {install.packages('aws.ec2metadata')}
 
 suppressWarnings(library(aws.s3))
-df_s3 <- s3read_using(FUN = read.csv, object = "data/abalone.data", bucket = bucket)
+df_s3 <- s3read_using(FUN = read.csv, object = "data/abalone.csv", bucket = bucket)
 head(df_s3)
 ```
 
