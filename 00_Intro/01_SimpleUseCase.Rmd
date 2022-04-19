@@ -13,8 +13,11 @@ rm(list = ls())
 ```
 
 ```{r, message=FALSE}
+if (!'tidymodels' %in% installed.packages()) {install.packages('tidymodels', repos='https://packagemanager.rstudio.com/all/__linux__/bionic/latest')}
+```
+
+```{r, message=FALSE}
 if (!'tidyverse' %in% installed.packages()) {install.packages('tidyverse')}
-if (!'tidymodels' %in% installed.packages()) {install.packages('tidymodels')}
 suppressWarnings(library(tidyverse))
 suppressWarnings(library(tidymodels))
 ```
