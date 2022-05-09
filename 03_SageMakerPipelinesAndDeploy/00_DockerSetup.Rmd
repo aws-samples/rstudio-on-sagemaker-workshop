@@ -8,14 +8,16 @@ knit: (function(inputFile, encoding) {
 # Build the containers
 In this example, we are building our own, reusable, containers. If you are unfamiliar with this process, feel free to jump to the previous section in this repository, in 02_AdvancedSageMaker to learn more about this. 
 
-```{r}
-if (!py_module_available("sagemaker-studio-image-build")){py_install("sagemaker-studio-image-build", pip=TRUE)}
-local_path <- dirname(rstudioapi::getSourceEditorContext()$path)
+## Install Studio Docker CLI
+```{bash, results='hide'}
+pip install sagemaker-studio-image-build
 ```
 
-```{r, results='hide'}
-system(paste0("cd ", local_path, " ; sm-docker build . --file ./docker/Dockerfile-processing --repository sagemaker-r-processing:1.0"))
+```{bash, results='hide'}
+/home/sagemaker-user/.local/bin/sm-docker build . --file ./docker/Dockerfile-processing --repository sagemaker-r-processing-pipeline:1.0
+```
 
-system(paste0("cd ", local_path, " ; sm-docker build . --file ./docker/Dockerfile-train-and-deploy --repository sagemaker-r-train-and-deploy:1.0"))
+```{bash, results='hide'}
+/home/sagemaker-user/.local/bin/sm-docker build . --file ./docker/Dockerfile-train-and-deploy --repository sagemaker-r-train-and-deploy-pipeline:1.0
 ```
 
