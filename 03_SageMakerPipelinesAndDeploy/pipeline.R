@@ -19,10 +19,10 @@ get_pipeline <- function(input_data_uri){
   account_id <- session$account_id()
   region <- boto3$session$Session()$region_name
   
-  ecr_repository_processing = "sagemaker-r-processing"
+  ecr_repository_processing = "sagemaker-r-processing-pipeline"
   tag_processing <- ":1.0"
   
-  ecr_repository_training = "sagemaker-r-train-and-deploy"
+  ecr_repository_training = "sagemaker-r-train-and-deploy-pipeline"
   tag_training <- ":1.0"
   
   
