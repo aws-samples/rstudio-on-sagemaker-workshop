@@ -35,6 +35,9 @@ https://sagemaker.readthedocs.io/en/stable/
 
 ```{r, results='hide'}
 library(reticulate)
+path_to_python <- system("which python", intern = TRUE)
+use_python(path_to_python)
+
 sagemaker <- import('sagemaker')
 session <- sagemaker$Session()
 bucket <- session$default_bucket()
