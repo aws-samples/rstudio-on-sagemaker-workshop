@@ -19,6 +19,8 @@ python -m pip install -U sagemaker
 ## Imports
 ```{r}
 suppressWarnings(library(reticulate))
+path_to_python <- system("which python", intern = TRUE)
+use_python(path_to_python)
 sagemaker <- import('sagemaker')
 
 role = sagemaker$get_execution_role()
