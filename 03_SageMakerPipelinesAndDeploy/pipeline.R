@@ -1,4 +1,6 @@
 library(reticulate)
+path_to_python <- system("which python", intern = TRUE)
+use_python(path_to_python)
 
 local_path <- dirname(rstudioapi::getSourceEditorContext()$path)
 
