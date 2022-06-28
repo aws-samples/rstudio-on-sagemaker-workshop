@@ -78,6 +78,9 @@ containers.
 ```{r}
 # Packages ----
 suppressWarnings(library(reticulate))
+path_to_python <- system("which python", intern = TRUE)
+use_python(path_to_python)
+
 
 # Python packages ----
 sagemaker <- import("sagemaker")
