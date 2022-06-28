@@ -15,7 +15,7 @@ rm(list = ls())
 ## Imports
 ```{r}
 suppressWarnings(library(reticulate))
-path_to_python <- "/opt/python/3.7.7/bin/python"
+path_to_python <- system("which python", intern = TRUE)
 use_python(path_to_python)
 sagemaker <- import('sagemaker')
 ```
