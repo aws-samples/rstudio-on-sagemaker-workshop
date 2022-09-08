@@ -104,9 +104,9 @@ best_estimator <- tuner$best_estimator()
 
 
 ```{r}
-inference_contianer_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-inference:1.0", sep=".")
+inference_container_uri <- paste(account_id, "dkr.ecr", region, "amazonaws.com/sagemaker-r-inference:1.0", sep=".")
 
-trained_model <- best_estimator$create_model(name='r-iris-model', role=role, image_uri = container_uri)
+trained_model <- best_estimator$create_model(name='r-iris-model', role=role, image_uri = inference_container_uri)
 endpoint  <- trained_model$deploy(initial_instance_count = 1L,
                                   instance_type = "ml.t2.medium",
                                   serializer = sagemaker$serializers$CSVSerializer(content_type='text/csv'),
