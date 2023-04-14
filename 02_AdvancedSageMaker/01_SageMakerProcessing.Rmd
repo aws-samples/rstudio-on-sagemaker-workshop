@@ -16,8 +16,9 @@ rm(list = ls())
 ## The reinstall process takes 5 minutes.
 ## https://github.com/rstudio/reticulate/issues/1257
 ```{bash}
-chmod 744 ./00_RPythonSetup.sh
-./00_RPythonSetup.sh
+python_path=$(which python)
+echo $python_path
+sudo --set-home $python_path -m pip install --no-user --force-reinstall --no-binary numpy numpy
 ```
 
 ## Imports
